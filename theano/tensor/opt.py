@@ -1607,26 +1607,27 @@ def local_useless_elemwise(node):
         ):
             
             if (
-                    isinstance(node.inputs[0], T.TensorConstant) and
-                    node.inputs[0].data == 1.0
+                isinstance(node.inputs[0], T.TensorConstant)
+                and T.extract_constant(node.inputs[0]) == 1
             ):
                 return [node.inputs[1]]
                 
             if (
-                    isinstance(node.inputs[1], T.TensorConstant) and
-                    node.inputs[1].data == 1.0
+
+                isinstance(node.inputs[1], T.TensorConstant)
+                and T.extract_constant(node.inputs[1]) == 1
             ):
                 return [node.inputs[0]]
                 
             if (
-                    isinstance(node.inputs[0], T.TensorConstant) and
-                    node.inputs[0].data == 0.0
+                isinstance(node.inputs[0], T.TensorConstant)
+                and T.extract_constant(node.inputs[0]) == 0
             ):
                 return zeros_like(node, 1)
                 
             if (
-                    isinstance(node.inputs[1], T.TensorConstant) and
-                    node.inputs[1].data == 0.0
+                isinstance(node.inputs[1], T.TensorConstant)
+                and T.extract_constant(node.inputs[1]) == 0
             ):
                 return zeros_like(node, 0)
                 
@@ -1636,26 +1637,26 @@ def local_useless_elemwise(node):
         ):
             
             if (
-                    isinstance(node.inputs[0], T.TensorConstant) and
-                    node.inputs[0].data == 0.0
+                isinstance(node.inputs[0], T.TensorConstant)
+                and T.extract_constant(node.inputs[0]) == 0
             ):
                 return [node.inputs[1]]
                 
             if (
-                    isinstance(node.inputs[1], T.TensorConstant) and
-                    node.inputs[1].data == 0.0
+                isinstance(node.inputs[1], T.TensorConstant)
+                and T.extract_constant(node.inputs[1]) == 0
             ):
                 return [node.inputs[0]]
                 
             if (
-                    isinstance(node.inputs[0], T.TensorConstant) and
-                    node.inputs[0].data == 1.0
+                isinstance(node.inputs[0], T.TensorConstant)
+                and T.extract_constant(node.inputs[0]) == 1
             ):
                 return ones_like(node, 1)
                 
             if (
-                    isinstance(node.inputs[1], T.TensorConstant) and
-                    node.inputs[1].data == 1.0
+               isinstance(node.inputs[1], T.TensorConstant)
+                and T.extract_constant(node.inputs[1]) == 1
             ):
                 return ones_like(node, 0)
                 
@@ -1667,11 +1668,11 @@ def local_useless_elemwise(node):
                 return zeros_like(node, 0)
                 
         if (
-                (
-                    isinstance(node.op.scalar_op, theano.scalar.basic.LE) or
-                    isinstance(node.op.scalar_op, theano.scalar.basic.GE)
-                ) and
-                len(node.inputs) == 2
+            isinstance(
+                node.op.scalar_op,
+                (theano.scalar.basic.LE, theano.scalar.basic.GE)
+            )
+            and len(node.inputs) == 2
         ):
             if node.inputs[0] == node.inputs[1]:
                 return ones_like(node, 0)
