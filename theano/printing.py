@@ -589,6 +589,11 @@ default_colorCodes = {'GpuFromHost': 'red',
                       'Alloc': '#FFAA22',  # orange
                       'Output': 'blue'}
 
+default_node_colors = {'input': 'green',
+                       'output': 'blue',
+                       'unused': 'grey'
+                       }
+
 
 def pydotprint(fct, outfile=None,
                compact=True, format='png', with_ids=False,
@@ -597,6 +602,7 @@ def pydotprint(fct, outfile=None,
                var_with_name_simple=False,
                print_output_file=True,
                return_image=False,
+               node_colors=None
                ):
     """Print to a file the graph of a compiled theano function's ops. Supports
     all pydot output formats, including png and svg.
@@ -676,6 +682,9 @@ def pydotprint(fct, outfile=None,
     """
     if colorCodes is None:
         colorCodes = default_colorCodes
+
+    if node_colors is None:
+        node_colors = default_node_colors
 
     if outfile is None:
         outfile = os.path.join(config.compiledir, 'theano.pydotprint.' +
@@ -884,34 +893,24 @@ def pydotprint(fct, outfile=None,
             if len(node.inputs) > 1:
                 label = str(idx)
             param = {}
-            if label:
-                param['label'] = label
-            if hasattr(node.op, 'view_map') and idx in reduce(
+            if hasattr(node.op, 'view_map') and id in reduce(
                     list.__add__, node.op.view_map.values(), []):
-                    param['color'] = colorCodes['Output']
-            elif hasattr(node.op, 'destroy_map') and idx in reduce(
+                    param['color'] = node_colors['output']
+            elif hasattr(node.op, 'destroy_map') and id in reduce(
                     list.__add__, node.op.destroy_map.values(), []):
                         param['color'] = 'red'
             if var.owner is None:
-                color = 'green'
-                if isinstance(var, SharedVariable):
-                    # Input are green, output blue
-                    # Mixing blue and green give cyan! (input and output var)
-                    color = "cyan"
                 if high_contrast:
                     g.add_node(pd.Node(varid,
                                        style='filled',
-                                       fillcolor=color,
-                                       label=varstr,
+                                       fillcolor=node_colors['input'],
                                        shape=var_shape))
                 else:
-                    g.add_node(pd.Node(varid,
-                                       color=color,
-                                       label=varstr,
+                    g.add_node(pd.Node(varstr, color=node_colors['input'],
                                        shape=var_shape))
-                g.add_edge(pd.Edge(varid, aid, **param))
-            elif var.name or not compact or var in outputs:
-                g.add_edge(pd.Edge(varid, aid, **param))
+                g.add_edge(pd.Edge(varstr, astr, label=label, **param))
+            elif var.name or not compact:
+                g.add_edge(pd.Edge(varstr, astr, label=label, **param))
             else:
                 # no name, so we don't make a var ellipse
                 if label:
@@ -936,23 +935,22 @@ def pydotprint(fct, outfile=None,
             if out or var in input_update:
                 g.add_edge(pd.Edge(aid, varid, **param))
                 if high_contrast:
-                    g.add_node(pd.Node(varid, style='filled',
-                                       label=varstr,
-                                       fillcolor=colorCodes['Output'], shape=var_shape))
+                    g.add_node(pd.Node(varstr, style='filled',
+                                       fillcolor=node_colors['output'],
+                                       shape=var_shape))
                 else:
-                    g.add_node(pd.Node(varid, color=colorCodes['Output'],
-                                       label=varstr,
+                    g.add_node(pd.Node(varstr, color=node_colors['output'],
                                        shape=var_shape))
             elif len(var.clients) == 0:
                 g.add_edge(pd.Edge(aid, varid, **param))
                 # grey mean that output var isn't used
                 if high_contrast:
-                    g.add_node(pd.Node(varid, style='filled',
-                                       label=varstr,
-                                       fillcolor='grey', shape=var_shape))
+                    g.add_node(pd.Node(varstr, style='filled',
+                                       fillcolor=node_colors['unused'],
+                                       shape=var_shape))
                 else:
-                    g.add_node(pd.Node(varid, label=varstr,
-                                       color='grey', shape=var_shape))
+                    g.add_node(pd.Node(varstr, color=node_colors['unused'],
+                                       shape=var_shape))
             elif var.name or not compact:
                 if not(not compact):
                     if label:
