@@ -113,6 +113,21 @@ class SharedVariable(Variable):
         else:
             self.container.value = copy.deepcopy(new_value)
 
+    def zero(self, borrow=False):
+        """Set the values of a shared variable to 0.
+
+        :param borrow:
+            True to modify the value of a shared variable directly. Potentially can
+            create problems regarding to the aliased memory.
+
+        Changes to this value will be visible to all functions using
+        this SharedVariable.
+        """
+        if borrow:
+            self.container.value = 0 * self.container.value
+        else:
+            self.container.value = 0 * copy.deepcopy(self.container.value)
+
     def clone(self):
         cp = self.__class__(
             name=self.name,
