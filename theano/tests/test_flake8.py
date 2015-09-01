@@ -207,6 +207,7 @@ whitelist_flake8 = [
     "gof/unify.py",
     "gof/__init__.py",
     "gof/sandbox/equilibrium.py",
+    "d3viz/__init__.py"
 ]
 
 
